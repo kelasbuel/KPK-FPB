@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelas Buel - Petualangan KPK & FPB Kelas 6 SD</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Font Family -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                        },
+                        accent: {
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #e0f2fe 0%, #f3e8ff 50%, #fce7f3 100%);
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-certificate, #printable-certificate * {
+                visibility: visible;
+            }
+            #printable-certificate {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-slate-800 font-sans antialiased selection:bg-brand-500 selection:text-white flex flex-col justify-between" x-data="appData()" x-init="initData()">
+
+    <div>
+        <!-- Navigation Bar -->
+        <nav class="sticky top-0 z-40 glass-card border-b border-slate-200/80 shadow-sm no-print">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <!-- Logo & Identitas Kelas Buel -->
+                    <div class="flex items-center space-x-3 cursor-pointer" @click="activeTab = 'home'">
+                        <img src="https://iili.io/nN5QSt9.md.jpg" alt="Logo Kelas Buel" class="w-10 h-10 rounded-xl object-cover shadow-md border border-white/80">
+                        <div>
+                            <span class="font-extrabold text-xl bg-gradient-to-r from-brand-600 to-accent-600 bg-clip-text text-transparent">Kelas Buel</span>
+                            <span class="block text-xs text-slate-500 font-semibold">Dunia Math: KPK & FPB Kelas 6 SD</span>
+                        </div>
+                    </div>
+
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:flex items-center space-x-1 lg:space-x-2">
+                        <button @click="activeTab = 'home'" :class="activeTab === 'home' ? 'bg-brand-50 text-brand-600 font-semibold' : 'text-slate-600 hover:bg-slate-100'" class="px-4 py-2 rounded-xl text-sm transition-all flex items-center space-x-2">
+                            <i data-lucide="home" class="w-4 h-4"></i>
+                            <span>Beranda</span>
+                        </button>
+                        <button @click="activeTab = 'materi'" :class="activeTab === 'materi' ? 'bg-brand-50 text-brand-600 font-semibold' : 'text-slate-600 hover:bg-slate-100'" class="px-4 py-2 rounded-xl text-sm transition-all flex items-center space-x-2">
+                            <i data-lucide="book-open" class="w-4 h-4"></i>
+                            <span>Modul Materi</span>
+                        </button>
+                        <button @click="activeTab = 'kalkulator'" :class="activeTab === 'kalkulator' ? 'bg-brand-50 text-brand-600 font-semibold' : 'text-slate-600 hover:bg-slate-100'" class="px-4 py-2 rounded-xl text-sm transition-all flex items-center space-x-2">
+                            <i data-lucide="calculator" class="w-4 h-4"></i>
+                            <span>Tool Hitung</span>
+                        </button>
+                        <button @click="activeTab = 'kuis'" :class="activeTab === 'kuis' ? 'bg-brand-50 text-brand-600 font-semibold' : 'text-slate-600 hover:bg-slate-100'" class="px-4 py-2 rounded-xl text-sm transition-all flex items-center space-x-2">
+                            <i data-lucide="brain-circuit" class="w-4 h-4"></i>
+                            <span>Kuis HOTS (20)</span>
+                        </button>
+                    </div>
+
+                    <!-- User Stats / Badge Preview -->
+                    <div class="hidden sm:flex items-center space-x-3 bg-white/80 px-3.5 py-1.5 rounded-full border border-slate-200 shadow-sm">
+                        <div class="flex items-center space-x-1.5 text-amber-500 font-bold text-sm">
+                            <i data-lucide="trophy" class="w-4 h-4"></i>
+                            <span x-text="score">0</span>
+                            <span class="text-xs text-slate-400 font-normal">Poin</span>
+                        </div>
+                        <div class="h-4 w-px bg-slate-200"></div>
+                        <div class="flex items-center space-x-1 text-xs text-slate-600 font-medium">
+                            <i data-lucide="award" class="w-4 h-4 text-purple-500"></i>
+                            <span x-text="getBadgeName()">Pemula</span>
+                        </div>
+                    </div>
+
+                    <!-- Mobile menu button -->
+                    <div class="md:hidden flex items-center">
+                        <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2 rounded-xl text-slate-600 hover:bg-slate-100 focus:outline-none">
+                            <i data-lucide="menu" x-show="!mobileMenuOpen" class="w-6 h-6"></i>
+                            <i data-lucide="x" x-show="mobileMenuOpen" class="w-6 h-6" x-cloak></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation Drawer -->
+            <div x-show="mobileMenuOpen" x-cloak transition class="md:hidden border-t border-slate-200 bg-white/95 px-4 pt-2 pb-4 space-y-1">
+                <button @click="activeTab = 'home'; mobileMenuOpen = false" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-600 flex items-center space-x-3">
+                    <i data-lucide="home" class="w-5 h-5 text-brand-500"></i>
+                    <span>Beranda</span>
+                </button>
+                <button @click="activeTab = 'materi'; mobileMenuOpen = false" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-600 flex items-center space-x-3">
+                    <i data-lucide="book-open" class="w-5 h-5 text-emerald-500"></i>
+                    <span>Modul Materi</span>
+                </button>
+                <button @click="activeTab = 'kalkulator'; mobileMenuOpen = false" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-600 flex items-center space-x-3">
+                    <i data-lucide="calculator" class="w-5 h-5 text-indigo-500"></i>
+                    <span>Tool Hitung KPK & FPB</span>
+                </button>
+                <button @click="activeTab = 'kuis'; mobileMenuOpen = false" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-600 flex items-center space-x-3">
+                    <i data-lucide="brain-circuit" class="w-5 h-5 text-rose-500"></i>
+                    <span>Kuis HOTS (20 Soal)</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Container -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 no-print">
+
+            <!-- TAB 1: BERANDA / HOME -->
+            <div x-show="activeTab === 'home'" x-cloak class="space-y-8">
+                <!-- Hero Banner -->
+                <div class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-brand-600 via-brand-500 to-accent-600 p-8 sm:p-12 text-white shadow-xl">
+                    <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="relative z-10 max-w-2xl space-y-4">
+                        <div class="flex items-center space-x-2">
+                            <img src="https://iili.io/nN5QSt9.md.jpg" alt="Kelas Buel" class="w-8 h-8 rounded-lg shadow-sm border border-white/40">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 text-white backdrop-blur-md">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Pembelajaran Matematika Kelas Buel
+                            </span>
+                        </div>
+                        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                            Kuasai KPK & FPB Bersama Kelas Buel!
+                        </h1>
+                        <p class="text-slate-100 text-sm sm:text-base leading-relaxed">
+                            Pelajari konsep Kelipatan Persekutuan Terkecil (KPK) dan Faktor Persekutuan Terbesar (FPB) melalui soal cerita kehidupan sehari-hari, alat hitung interaktif, dan kuis latih tanding 20 Soal HOTS!
+                        </p>
+                        <div class="pt-4 flex flex-wrap gap-3">
+                            <button @click="activeTab = 'materi'" class="px-6 py-3 bg-white text-brand-600 hover:bg-slate-100 rounded-xl font-bold shadow-lg transition-transform active:scale-95 flex items-center gap-2">
+                                <i data-lucide="play-circle" class="w-5 h-5"></i> Mulai Belajar
+                            </button>
+                            <button @click="activeTab = 'kuis'" class="px-6 py-3 bg-accent-500/30 hover:bg-accent-500/50 text-white border border-white/30 rounded-xl font-semibold backdrop-blur-md transition-all flex items-center gap-2">
+                                <i data-lucide="target" class="w-5 h-5"></i> Langsung Kuis (20 Soal)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Feature 1 -->
+                    <div class="glass-card p-6 rounded-2xl shadow-sm border border-white/60 hover:shadow-md transition-all">
+                        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mb-4">
+                            <i data-lucide="book-open" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-2">Modul Visual Interactive</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed">
+                            Metode Pohon Faktor dan Tabel Sengkedan dijelaskan dengan peragaan visual yang ringkas dan ramah anak.
+                        </p>
+                    </div>
+                    <!-- Feature 2 -->
+                    <div class="glass-card p-6 rounded-2xl shadow-sm border border-white/60 hover:shadow-md transition-all">
+                        <div class="w-12 h-12 bg-brand-100 text-brand-600 rounded-xl flex items-center justify-center mb-4">
+                            <i data-lucide="calculator" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-2">Kalkulator Langkah Otomatis</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed">
+                            Masukkan 2 atau 3 angka untuk melihat faktorisasi prima, KPK, dan FPB lengkap dengan penjelasan langkahnya.
+                        </p>
+                    </div>
+                    <!-- Feature 3 -->
+                    <div class="glass-card p-6 rounded-2xl shadow-sm border border-white/60 hover:shadow-md transition-all">
+                        <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center mb-4">
+                            <i data-lucide="award" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-2">20 Soal Cerita HOTS</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed">
+                            Terbagi seimbang: 10 Soal KPK (Jadwal bersama) & 10 Soal FPB (Pembagian adil) dengan pembahasan detail!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Quick Tips Cards: Kata Kunci Soal Cerita -->
+                <div class="glass-card p-6 sm:p-8 rounded-3xl border border-white/80 shadow-sm">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="p-2 bg-amber-100 text-amber-600 rounded-xl">
+                            <i data-lucide="key" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-extrabold text-slate-800">Trik Cepat Soal Cerita Kelas Buel</h2>
+                            <p class="text-xs text-slate-500">Cara membedakan kapan menggunakan KPK dan FPB</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- KPK Key -->
+                        <div class="bg-gradient-to-br from-brand-50 to-blue-50 border border-brand-200/60 p-5 rounded-2xl space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="font-extrabold text-brand-700 text-base">Ciri Soal KPK</span>
+                                <span class="px-2.5 py-1 bg-brand-500 text-white text-xs font-bold rounded-full">Kelipatan</span>
+                            </div>
+                            <p class="text-sm text-slate-600">
+                                Digunakan saat mencari **waktu bersamaan/bersama-sama kembali**.
+                            </p>
+                            <div class="bg-white/80 p-3 rounded-xl border border-brand-100 text-xs space-y-1.5 text-slate-700">
+                                <p class="font-semibold text-brand-800">Kata Kunci Utama:</p>
+                                <ul class="list-disc list-inside space-y-1 text-slate-600">
+                                    <li>"Setiap ... sekali", "Bersama-sama lagi"</li>
+                                    <li>"Kapan mereka bertemu lagi?"</li>
+                                    <li>"Setiap X hari/menit/jam sekali"</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- FPB Key -->
+                        <div class="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200/60 p-5 rounded-2xl space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="font-extrabold text-purple-700 text-base">Ciri Soal FPB</span>
+                                <span class="px-2.5 py-1 bg-purple-500 text-white text-xs font-bold rounded-full">Faktor</span>
+                            </div>
+                            <p class="text-sm text-slate-600">
+                                Digunakan saat **membagi barang/benda menjadi beberapa bagian sama banyak/adil**.
+                            </p>
+                            <div class="bg-white/80 p-3 rounded-xl border border-purple-100 text-xs space-y-1.5 text-slate-700">
+                                <p class="font-semibold text-purple-800">Kata Kunci Utama:</p>
+                                <ul class="list-disc list-inside space-y-1 text-slate-600">
+                                    <li>"Paling banyak ...", "Sama banyak"</li>
+                                    <li>"Dimasukkan ke dalam kantong sama rata"</li>
+                                    <li>"Jumlah kantong/wadah terbanyak"</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: MODUL MATERI -->
+            <div x-show="activeTab === 'materi'" x-cloak class="space-y-8">
+                <!-- Header -->
+                <div class="text-center max-w-2xl mx-auto space-y-2">
+                    <h2 class="text-3xl font-extrabold text-slate-800">Rangkuman & Modul Interaktif</h2>
+                    <p class="text-slate-600 text-sm">Pahami landasan teori, faktorisasi prima, dan contoh nyata dalam kehidupan sehari-hari.</p>
+                </div>
+
+                <!-- Segment Switcher -->
+                <div class="flex justify-center border-b border-slate-200">
+                    <div class="inline-flex p-1 bg-white/80 backdrop-blur rounded-2xl border border-slate-200">
+                        <button @click="materiSubTab = 'kpk'" :class="materiSubTab === 'kpk' ? 'bg-brand-500 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'" class="px-5 py-2 rounded-xl text-sm font-bold transition-all">
+                            Kelipatan Persekutuan Terkecil (KPK)
+                        </button>
+                        <button @click="materiSubTab = 'fpb'" :class="materiSubTab === 'fpb' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'" class="px-5 py-2 rounded-xl text-sm font-bold transition-all">
+                            Faktor Persekutuan Terbesar (FPB)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sub Materi: KPK -->
+                <div x-show="materiSubTab === 'kpk'" class="space-y-6">
+                    <div class="glass-card p-6 sm:p-8 rounded-3xl border border-white/80 shadow-sm space-y-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-3 bg-brand-100 text-brand-600 rounded-2xl">
+                                <i data-lucide="refresh-cw" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-extrabold text-slate-800">Konsep Dasar KPK</h3>
+                                <p class="text-xs text-slate-500">Kelipatan persekutuan yang bernilai terkecil di antara dua atau lebih bilangan</p>
+                            </div>
+                        </div>
+
+                        <div class="prose prose-slate max-w-none text-sm text-slate-600 space-y-3">
+                            <p>
+                                **KPK** digunakan ketika kita ingin mencari angka persekutuan terkecil yang bisa dibagi habis oleh bilangan-bilangan tersebut.
+                            </p>
+                            <div class="bg-brand-50/70 p-4 rounded-2xl border border-brand-100 space-y-2">
+                                <p class="font-bold text-brand-900">Aturan Faktorisasi Prima untuk KPK:</p>
+                                <p class="text-xs text-brand-800 leading-relaxed">
+                                    1. Cari faktor-faktor prima dari setiap bilangan.<br>
+                                    2. Ambil **semua faktor prima** yang ada.<br>
+                                    3. Jika ada faktor prima yang sama, ambil yang memiliki **pangkat terbesar/tertinggi**.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Visual Example -->
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                            <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-brand-500"></i> Contoh Kasus KPK (Pohon Faktor)
+                            </h4>
+                            <p class="text-xs text-slate-600">Cari KPK dari 12 dan 18:</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                    <span class="font-bold text-brand-600">12 = 2² × 3</span>
+                                    <p class="text-slate-500 mt-1">(Pohon faktor: 12 ÷ 2 = 6, 6 ÷ 2 = 3)</p>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                    <span class="font-bold text-brand-600">18 = 2 × 3²</span>
+                                    <p class="text-slate-500 mt-1">(Pohon faktor: 18 ÷ 2 = 9, 9 ÷ 3 = 3)</p>
+                                </div>
+                            </div>
+
+                            <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 space-y-1">
+                                <p class="font-bold">Langkah Penentuan KPK:</p>
+                                <p>Faktor prima yang ada: 2 dan 3.</p>
+                                <p>Pangkat terbesar angka 2 adalah <span class="font-bold text-emerald-700">2²</span>. Pangkat terbesar angka 3 adalah <span class="font-bold text-emerald-700">3²</span>.</p>
+                                <p class="font-bold text-sm pt-1">Maka, KPK = 2² × 3² = 4 × 9 = 36</p>
+                            </div>
+                        </div>
+
+                        <!-- Soal Cerita Contoh KPK -->
+                        <div class="bg-amber-50/60 border border-amber-200 p-5 rounded-2xl space-y-2">
+                            <h4 class="font-bold text-amber-900 text-sm flex items-center gap-2">
+                                <i data-lucide="compass" class="w-4 h-4 text-amber-600"></i> Aplikasi Soal Cerita Nyata
+                            </h4>
+                            <p class="text-xs text-slate-700 leading-relaxed">
+                                <strong>Contoh:</strong> Ani les Matematika setiap 4 hari sekali, sedangkan Budi setiap 6 hari sekali. Jika hari ini mereka les bersama, berapa hari lagi mereka akan les bersama kembali?
+                            </p>
+                            <p class="text-xs text-slate-600">
+                                <strong>Solusi:</strong> Cari KPK dari 4 dan 6. <br>
+                                4 = 2², 6 = 2 × 3. KPK = 2² × 3 = 12. <br>
+                                <span class="font-semibold text-amber-800">Jadi, mereka akan les bersama lagi 12 hari yang akan datang!</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub Materi: FPB -->
+                <div x-show="materiSubTab === 'fpb'" class="space-y-6" x-cloak>
+                    <div class="glass-card p-6 sm:p-8 rounded-3xl border border-white/80 shadow-sm space-y-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-3 bg-purple-100 text-purple-600 rounded-2xl">
+                                <i data-lucide="pie-chart" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-extrabold text-slate-800">Konsep Dasar FPB</h3>
+                                <p class="text-xs text-slate-500">Faktor persekutuan yang bernilai terbesar di antara dua atau lebih bilangan</p>
+                            </div>
+                        </div>
+
+                        <div class="prose prose-slate max-w-none text-sm text-slate-600 space-y-3">
+                            <p>
+                                **FPB** digunakan ketika kita hendak membagi dua atau lebih himpunan benda menjadi kelompok-kelompok kecil dengan jumlah yang **sama rata**.
+                            </p>
+                            <div class="bg-purple-50/70 p-4 rounded-2xl border border-purple-100 space-y-2">
+                                <p class="font-bold text-purple-900">Aturan Faktorisasi Prima untuk FPB:</p>
+                                <p class="text-xs text-purple-800 leading-relaxed">
+                                    1. Cari faktor-faktor prima dari setiap bilangan.<br>
+                                    2. Ambil **hanya faktor prima yang sama (bersekutu)** di semua bilangan.<br>
+                                    3. Jika faktor sekutu berpangkat beda, ambil yang berpangkat **terkecil/terendah**.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Visual Example -->
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                            <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-purple-500"></i> Contoh Kasus FPB (Pohon Faktor)
+                            </h4>
+                            <p class="text-xs text-slate-600">Cari FPB dari 24 dan 36:</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                    <span class="font-bold text-purple-600">24 = 2³ × 3</span>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                    <span class="font-bold text-purple-600">36 = 2² × 3²</span>
+                                </div>
+                            </div>
+
+                            <div class="p-4 bg-purple-50 border border-purple-200 rounded-xl text-xs text-purple-900 space-y-1">
+                                <p class="font-bold">Langkah Penentuan FPB:</p>
+                                <p>Faktor prima yang sama di keduanya: 2 dan 3.</p>
+                                <p>Pangkat terkecil angka 2 adalah <span class="font-bold text-purple-700">2²</span>. Pangkat terkecil angka 3 adalah <span class="font-bold text-purple-700">3¹</span>.</p>
+                                <p class="font-bold text-sm pt-1">Maka, FPB = 2² × 3 = 4 × 3 = 12</p>
+                            </div>
+                        </div>
+
+                        <!-- Soal Cerita Contoh FPB -->
+                        <div class="bg-indigo-50/60 border border-indigo-200 p-5 rounded-2xl space-y-2">
+                            <h4 class="font-bold text-indigo-900 text-sm flex items-center gap-2">
+                                <i data-lucide="gift" class="w-4 h-4 text-indigo-600"></i> Aplikasi Soal Cerita Nyata
+                            </h4>
+                            <p class="text-xs text-slate-700 leading-relaxed">
+                                <strong>Contoh:</strong> Ibu mempunyai 16 permen dan 24 cokelat. Ibu ingin membagikannya ke dalam beberapa kantong plastik secara adil dengan jumlah permen dan cokelat yang sama di tiap kantong. Berapa kantong plastik paling banyak yang dibutuhkan?
+                            </p>
+                            <p class="text-xs text-slate-600">
+                                <strong>Solusi:</strong> Cari FPB dari 16 dan 24.<br>
+                                16 = 2⁴, 24 = 2³ × 3. FPB = 2³ = 8.<br>
+                                <span class="font-semibold text-indigo-800">Jadi, kantong plastik terbanyak yang dibutuhkan Ibu adalah 8 kantong!</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: KALKULATOR / TOOL INTERAKTIF -->
+            <div x-show="activeTab === 'kalkulator'" x-cloak class="space-y-8">
+                <div class="text-center max-w-2xl mx-auto space-y-2">
+                    <h2 class="text-3xl font-extrabold text-slate-800">Kalkulator KPK & FPB Otomatis</h2>
+                    <p class="text-slate-600 text-sm">Gunakan alat ini untuk mengecek jawaban latihanmu dan melihat langkah faktorisasi primanya secara transparan.</p>
+                </div>
+
+                <div class="glass-card max-w-3xl mx-auto p-6 sm:p-8 rounded-3xl border border-white/80 shadow-md space-y-6">
+                    <!-- Input Controls -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                <i data-lucide="hash" class="w-4 h-4 text-brand-500"></i> Masukkan Bilangan (2 atau 3 angka):
+                            </label>
+                            <div class="flex items-center space-x-2 text-xs">
+                                <button @click="calcCount = 2; resetCalc()" :class="calcCount === 2 ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600'" class="px-3 py-1 rounded-lg font-semibold transition">2 Angka</button>
+                                <button @click="calcCount = 3; resetCalc()" :class="calcCount === 3 ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600'" class="px-3 py-1 rounded-lg font-semibold transition">3 Angka</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <span class="text-xs text-slate-500 block mb-1 font-medium">Bilangan Pertama</span>
+                                <input type="number" x-model.number="calcNum1" min="1" max="1000" placeholder="E.g. 12" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 font-bold text-slate-800">
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-500 block mb-1 font-medium">Bilangan Kedua</span>
+                                <input type="number" x-model.number="calcNum2" min="1" max="1000" placeholder="E.g. 18" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 font-bold text-slate-800">
+                            </div>
+                            <div x-show="calcCount === 3">
+                                <span class="text-xs text-slate-500 block mb-1 font-medium">Bilangan Ketiga</span>
+                                <input type="number" x-model.number="calcNum3" min="1" max="1000" placeholder="E.g. 24" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 font-bold text-slate-800">
+                            </div>
+                        </div>
+
+                        <button @click="calculateKpkFpb()" class="w-full py-3.5 bg-gradient-to-r from-brand-600 to-accent-600 hover:from-brand-700 hover:to-accent-700 text-white font-extrabold rounded-xl shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2">
+                            <i data-lucide="calculator" class="w-5 h-5"></i> Hitung Langkah Demi Langkah
+                        </button>
+                    </div>
+
+                    <!-- Calculator Results Area -->
+                    <div x-show="calcResult !== null" x-cloak class="space-y-6 pt-4 border-t border-slate-200">
+                        <!-- Cards Summary -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-gradient-to-br from-brand-500 to-brand-600 text-white p-5 rounded-2xl shadow-sm space-y-1">
+                                <span class="text-xs font-medium uppercase tracking-wider text-brand-100">Hasil KPK</span>
+                                <div class="text-3xl font-extrabold" x-text="calcResult?.kpk"></div>
+                                <span class="text-xs text-brand-100 block">Kelipatan Persekutuan Terkecil</span>
+                            </div>
+                            <div class="bg-gradient-to-br from-purple-600 to-accent-600 text-white p-5 rounded-2xl shadow-sm space-y-1">
+                                <span class="text-xs font-medium uppercase tracking-wider text-purple-100">Hasil FPB</span>
+                                <div class="text-3xl font-extrabold" x-text="calcResult?.fpb"></div>
+                                <span class="text-xs text-purple-100 block">Faktor Persekutuan Terbesar</span>
+                            </div>
+                        </div>
+
+                        <!-- Step by step details -->
+                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+                            <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i data-lucide="list-checks" class="w-4 h-4 text-emerald-600"></i> Rincian Faktorisasi Prima
+                            </h4>
+                            
+                            <div class="space-y-2 text-xs">
+                                <template x-for="(item, idx) in calcResult?.factors" :key="idx">
+                                    <div class="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-200">
+                                        <span class="font-bold text-slate-700" x-text="'Angka ' + item.num + ':'"></span>
+                                        <span class="font-mono text-brand-700 font-semibold" x-text="item.factorString"></span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="pt-2 text-xs text-slate-600 space-y-1">
+                                <p><strong>Penjelasan KPK:</strong> Menggabungkan seluruh faktor prima (<span x-text="calcResult?.kpkFormula"></span>) = <strong x-text="calcResult?.kpk"></strong></p>
+                                <p><strong>Penjelasan FPB:</strong> Mengambil perkalian faktor prima sekutu berpangkat terkecil (<span x-text="calcResult?.fpbFormula"></span>) = <strong x-text="calcResult?.fpb"></strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: KUIS / LATIHAN SOAL HOTS (20 SOAL) -->
+            <div x-show="activeTab === 'kuis'" x-cloak class="space-y-8">
+                
+                <!-- START / QUIZ STATE -->
+                <template x-if="quizState === 'start'">
+                    <div class="glass-card max-w-2xl mx-auto p-8 rounded-3xl text-center space-y-6 border border-white/80 shadow-md">
+                        <div class="flex justify-center">
+                            <img src="https://iili.io/nN5QSt9.md.jpg" alt="Kelas Buel Logo" class="w-20 h-20 rounded-3xl object-cover shadow-lg border-2 border-white">
+                        </div>
+                        <div class="space-y-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-brand-600 bg-brand-50 px-3 py-1 rounded-full border border-brand-200">Kuis Kelas Buel</span>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-800">Ujian Tantangan 20 Soal HOTS</h2>
+                            <p class="text-slate-600 text-sm">
+                                Uji pemahamanmu mengenai KPK dan FPB melalui 20 soal cerita matematika standar Kelas VI SD!
+                            </p>
+                        </div>
+
+                        <!-- Quiz Rules -->
+                        <div class="bg-slate-50 p-4 rounded-2xl text-left border border-slate-200 text-xs space-y-2 text-slate-700">
+                            <p class="font-bold text-slate-800 text-sm">Aturan & Komposisi Kuis Kelas Buel:</p>
+                            <div class="grid grid-cols-2 gap-2 pt-1">
+                                <div class="p-2 bg-brand-50 rounded-lg border border-brand-100 flex items-center space-x-2">
+                                    <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-600"></i>
+                                    <span><strong>10 Soal KPK</strong> (Jadwal/Waktu)</span>
+                                </div>
+                                <div class="p-2 bg-purple-50 rounded-lg border border-purple-100 flex items-center space-x-2">
+                                    <i data-lucide="check-circle-2" class="w-4 h-4 text-purple-600"></i>
+                                    <span><strong>10 Soal FPB</strong> (Pembagian Adil)</span>
+                                </div>
+                            </div>
+                            <ul class="list-disc list-inside space-y-1 pt-2 text-slate-600">
+                                <li>Setiap jawaban benar bernilai <strong>+5 Poin</strong> (Total Skor Maksimal: 100).</li>
+                                <li>Tersedia tombol **Petunjuk / Hint** jika kamu merasa kesulitan.</li>
+                                <li>Waktu pengerjaan akan dicatat otomatis.</li>
+                            </ul>
+                        </div>
+
+                        <button @click="startQuiz()" class="w-full py-4 bg-gradient-to-r from-brand-600 to-accent-600 hover:from-brand-700 hover:to-accent-700 text-white font-extrabold rounded-2xl shadow-lg transition-transform active:scale-95 text-base flex items-center justify-center gap-2">
+                            <i data-lucide="play" class="w-5 h-5"></i> Mulai Kuis Sekarang
+                        </button>
+                    </div>
+                </template>
+
+                <!-- ACTIVE QUIZ STATE -->
+                <template x-if="quizState === 'active'">
+                    <div class="max-w-3xl mx-auto space-y-6">
+                        <!-- Progress Bar & Timer Header -->
+                        <div class="glass-card p-4 rounded-2xl border border-white/80 shadow-sm flex items-center justify-between gap-4">
+                            <div class="flex items-center space-x-3 flex-1">
+                                <span class="text-xs font-bold text-brand-600 bg-brand-50 px-3 py-1.5 rounded-xl border border-brand-200 whitespace-nowrap" x-text="'Soal ' + (currentQuestionIndex + 1) + ' / ' + questions.length"></span>
+                                <!-- Progress Line -->
+                                <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                                    <div class="bg-gradient-to-r from-brand-500 to-accent-500 h-full transition-all duration-300" :style="'width: ' + (((currentQuestionIndex + 1) / questions.length) * 100) + '%'"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-1.5 text-slate-600 text-xs font-bold bg-slate-100 px-3 py-1.5 rounded-xl">
+                                <i data-lucide="timer" class="w-4 h-4 text-amber-500"></i>
+                                <span x-text="formatTime(quizTimer)">00:00</span>
+                            </div>
+                        </div>
+
+                        <!-- Question Card -->
+                        <div class="glass-card p-6 sm:p-8 rounded-3xl border border-white/80 shadow-md space-y-6">
+                            <!-- Category Tag -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <img src="https://iili.io/nN5QSt9.md.jpg" alt="Kelas Buel" class="w-6 h-6 rounded-md">
+                                    <span class="px-3 py-1 rounded-full text-xs font-extrabold tracking-wide uppercase"
+                                          :class="questions[currentQuestionIndex].type === 'KPK' ? 'bg-brand-100 text-brand-700' : 'bg-purple-100 text-purple-700'"
+                                          x-text="'Kategori: ' + questions[currentQuestionIndex].type">
+                                    </span>
+                                </div>
+                                <button @click="toggleHint()" class="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200/60">
+                                    <i data-lucide="lightbulb" class="w-3.5 h-3.5"></i>
+                                    <span x-text="showHint ? 'Sembunyikan Petunjuk' : 'Butuh Petunjuk?'"></span>
+                                </button>
+                            </div>
+
+                            <!-- Hint Box -->
+                            <div x-show="showHint" x-cloak class="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 flex items-start space-x-2">
+                                <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+                                <div>
+                                    <span class="font-bold">Petunjuk Soal:</span>
+                                    <p x-text="questions[currentQuestionIndex].hint" class="mt-0.5 text-amber-800"></p>
+                                </div>
+                            </div>
+
+                            <!-- Question Text -->
+                            <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-relaxed" x-text="questions[currentQuestionIndex].question"></h3>
+
+                            <!-- Options List -->
+                            <div class="space-y-3">
+                                <template x-for="(option, idx) in questions[currentQuestionIndex].options" :key="idx">
+                                    <button @click="selectAnswer(idx)" 
+                                            :disabled="selectedOption !== null"
+                                            :class="{
+                                                'bg-white border-slate-200 hover:border-brand-400 hover:bg-brand-50/30': selectedOption === null,
+                                                'bg-emerald-50 border-emerald-500 text-emerald-900 font-bold': selectedOption !== null && idx === questions[currentQuestionIndex].correctIndex,
+                                                'bg-rose-50 border-rose-400 text-rose-900': selectedOption !== null && selectedOption === idx && idx !== questions[currentQuestionIndex].correctIndex,
+                                                'opacity-50': selectedOption !== null && idx !== selectedOption && idx !== questions[currentQuestionIndex].correctIndex
+                                            }"
+                                            class="w-full text-left p-4 rounded-2xl border text-sm transition-all flex items-center justify-between">
+                                        <div class="flex items-center space-x-3">
+                                            <span class="w-7 h-7 rounded-xl flex items-center justify-center font-bold text-xs bg-slate-100 text-slate-600"
+                                                  :class="{
+                                                      'bg-emerald-500 text-white': selectedOption !== null && idx === questions[currentQuestionIndex].correctIndex,
+                                                      'bg-rose-500 text-white': selectedOption !== null && selectedOption === idx && idx !== questions[currentQuestionIndex].correctIndex
+                                                  }"
+                                                  x-text="['A', 'B', 'C', 'D'][idx]"></span>
+                                            <span x-text="option"></span>
+                                        </div>
+                                        
+                                        <!-- Status icons -->
+                                        <template x-if="selectedOption !== null && idx === questions[currentQuestionIndex].correctIndex">
+                                            <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>
+                                        </template>
+                                        <template x-if="selectedOption !== null && selectedOption === idx && idx !== questions[currentQuestionIndex].correctIndex">
+                                            <i data-lucide="x-circle" class="w-5 h-5 text-rose-500"></i>
+                                        </template>
+                                    </button>
+                                </template>
+                            </div>
+
+                            <!-- Feedback / Pembahasan Langsung -->
+                            <div x-show="selectedOption !== null" x-cloak class="p-4 rounded-2xl border text-xs space-y-2"
+                                 :class="selectedOption === questions[currentQuestionIndex].correctIndex ? 'bg-emerald-50/80 border-emerald-200 text-emerald-900' : 'bg-rose-50/80 border-rose-200 text-rose-900'">
+                                <div class="font-bold flex items-center gap-1.5 text-sm">
+                                    <span x-text="selectedOption === questions[currentQuestionIndex].correctIndex ? '🎉 Tepat sekali!' : '❌ Masih kurang tepat'"></span>
+                                </div>
+                                <p><strong>Pembahasan:</strong> <span x-text="questions[currentQuestionIndex].explanation"></span></p>
+                            </div>
+
+                            <!-- Action Next Button -->
+                            <div class="flex justify-end pt-2">
+                                <button x-show="selectedOption !== null" @click="nextQuestion()" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition flex items-center gap-2 text-sm">
+                                    <span x-text="currentQuestionIndex + 1 < questions.length ? 'Soal Berikutnya' : 'Lihat Hasil Akhir'"></span>
+                                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- RESULT STATE -->
+                <template x-if="quizState === 'result'">
+                    <div class="max-w-4xl mx-auto space-y-8">
+                        <!-- Summary Score Card -->
+                        <div class="glass-card p-8 rounded-3xl border border-white/80 shadow-lg text-center space-y-6">
+                            <div class="flex justify-center">
+                                <img src="https://iili.io/nN5QSt9.md.jpg" alt="Kelas Buel Logo" class="w-20 h-20 rounded-3xl object-cover shadow-lg border-2 border-white">
+                            </div>
+                            <div>
+                                <h2 class="text-3xl font-extrabold text-slate-800">Hasil Kuis Kelas Buel Selesai!</h2>
+                                <p class="text-slate-500 text-sm">Berikut adalah pencapaian pengerjaan 20 Soal HOTS KPK & FPB</p>
+                            </div>
+
+                            <!-- Big Numbers -->
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+                                <div class="p-4 bg-white/80 rounded-2xl border border-slate-200">
+                                    <span class="text-xs text-slate-500 block font-medium">Nilai Akhir</span>
+                                    <span class="text-3xl font-extrabold text-brand-600" x-text="score"></span>
+                                    <span class="text-[10px] text-slate-400">/ 100 Poin</span>
+                                </div>
+                                <div class="p-4 bg-white/80 rounded-2xl border border-slate-200">
+                                    <span class="text-xs text-slate-500 block font-medium">Jawaban Benar</span>
+                                    <span class="text-3xl font-extrabold text-emerald-600" x-text="userAnswers.filter(a => a.isCorrect).length"></span>
+                                    <span class="text-[10px] text-slate-400">/ 20 Soal</span>
+                                </div>
+                                <div class="p-4 bg-white/80 rounded-2xl border border-slate-200">
+                                    <span class="text-xs text-slate-500 block font-medium">Akurasi KPK</span>
+                                    <span class="text-3xl font-extrabold text-blue-600" x-text="getAccuracyKPK() + '%'"></span>
+                                    <span class="text-[10px] text-slate-400">10 Soal KPK</span>
+                                </div>
+                                <div class="p-4 bg-white/80 rounded-2xl border border-slate-200">
+                                    <span class="text-xs text-slate-500 block font-medium">Akurasi FPB</span>
+                                    <span class="text-3xl font-extrabold text-purple-600" x-text="getAccuracyFPB() + '%'"></span>
+                                    <span class="text-[10px] text-slate-400">10 Soal FPB</span>
+                                </div>
+                            </div>
+
+                            <!-- Recommendation & Evaluation Box -->
+                            <div class="p-4 rounded-2xl border text-left text-xs space-y-1 bg-brand-50/60 border-brand-200 text-brand-900">
+                                <p class="font-bold text-sm">💡 Rekomendasi Evaluasi Belajar Kelas Buel:</p>
+                                <p x-text="getRecommendationText()"></p>
+                            </div>
+
+                            <!-- Buttons Actions -->
+                            <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                                <button @click="printCertificate()" class="px-5 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow transition flex items-center gap-2 text-sm">
+                                    <i data-lucide="printer" class="w-4 h-4"></i> Cetak Sertifikat Hasil
+                                </button>
+                                <button @click="startQuiz()" class="px-5 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow transition flex items-center gap-2 text-sm">
+                                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Ulangi Kuis
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Full Discussion List (Pembahasan Lengkap 20 Soal) -->
+                        <div class="glass-card p-6 sm:p-8 rounded-3xl border border-white/80 shadow-md space-y-6">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-xl font-extrabold text-slate-800 flex items-center gap-2">
+                                    <i data-lucide="file-text" class="w-5 h-5 text-brand-500"></i> Pembahasan Lengkap Seluruh Soal
+                                </h3>
+                                <span class="text-xs text-slate-500">20 Soal HOTS</span>
+                            </div>
+
+                            <div class="space-y-4">
+                                <template x-for="(item, idx) in userAnswers" :key="idx">
+                                    <div class="p-4 bg-white/80 rounded-2xl border border-slate-200 text-xs space-y-2">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div class="flex items-center space-x-2">
+                                                <span class="px-2 py-0.5 rounded font-bold text-[10px]" :class="item.questionObj.type === 'KPK' ? 'bg-brand-100 text-brand-700' : 'bg-purple-100 text-purple-700'" x-text="item.questionObj.type"></span>
+                                                <span class="font-bold text-slate-700" x-text="'Soal #' + (idx + 1)"></span>
+                                            </div>
+                                            <span class="px-2 py-0.5 rounded font-bold text-[10px]" :class="item.isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'" x-text="item.isCorrect ? 'BENAR' : 'SALAH'"></span>
+                                        </div>
+                                        <p class="font-medium text-slate-800" x-text="item.questionObj.question"></p>
+                                        <p class="text-slate-500">
+                                            Jawaban Anda: <span class="font-semibold" :class="item.isCorrect ? 'text-emerald-600' : 'text-rose-600'" x-text="item.questionObj.options[item.selected]"></span>
+                                            <span x-show="!item.isCorrect"> | Kunci Benar: <strong class="text-emerald-600" x-text="item.questionObj.options[item.questionObj.correctIndex]"></strong></span>
+                                        </p>
+                                        <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-slate-600">
+                                            <strong>Langkah Pembahasan:</strong> <span x-text="item.questionObj.explanation"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="mt-12 bg-white/80 backdrop-blur-md border-t border-slate-200 py-6 no-print">
+        <div class="max-w-7xl mx-auto px-4 text-center text-slate-500 text-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <img src="https://iili.io/nN5QSt9.md.jpg" alt="Logo Kelas Buel" class="w-7 h-7 rounded-lg object-cover">
+                <span class="font-bold text-slate-700 text-sm">Kelas Buel &copy; 2026</span>
+            </div>
+            <p>Media Pembelajaran Matematika KPK & FPB Kelas 6 SD - Berbasis HOTS & Interaktif</p>
+        </div>
+    </footer>
+
+    <!-- PRINTABLE CERTIFICATE TEMPLATE (Hidden from normal UI, Visible on Print) -->
+    <div id="printable-certificate" class="hidden print:block p-10 bg-white text-slate-900 border-8 border-brand-600 font-sans">
+        <div class="text-center space-y-6 border-4 border-amber-400 p-8 relative">
+            
+            <!-- Logo Header Sertifikat Kelas Buel -->
+            <div class="flex items-center justify-center space-x-3">
+                <img src="https://iili.io/nN5QSt9.md.jpg" alt="Logo Kelas Buel" class="w-16 h-16 rounded-2xl object-cover shadow-md">
+                <div class="text-left">
+                    <h2 class="text-2xl font-black text-brand-700 tracking-wide uppercase">Kelas Buel</h2>
+                    <p class="text-xs text-slate-500 font-bold uppercase tracking-widest">Sertifikat Kelulusan Modul Matematika</p>
+                </div>
+            </div>
+
+            <div class="py-2">
+                <p class="text-xs text-slate-400 uppercase tracking-wider">Sertifikat ini secara resmi diberikan kepada:</p>
+                <h2 class="text-2xl font-bold text-slate-800 mt-1 border-b-2 border-slate-300 inline-block px-8 pb-1">Siswa Berprestasi Kelas VI SD</h2>
+            </div>
+
+            <p class="text-sm text-slate-600 max-w-xl mx-auto">
+                Telah berhasil menyelesaikan **Kuis Pembelajaran Interaktif HOTS Matematika** materi **Kelipatan Persekutuan Terkecil (KPK) & Faktor Persekutuan Terbesar (FPB)** di **Kelas Buel**.
+            </p>
+
+            <div class="grid grid-cols-3 gap-4 max-w-md mx-auto pt-2 text-center text-xs">
+                <div class="p-3 bg-slate-100 rounded-lg">
+                    <span class="block text-slate-400">Total Skor</span>
+                    <strong class="text-lg text-brand-600" x-text="score">0</strong>
+                </div>
+                <div class="p-3 bg-slate-100 rounded-lg">
+                    <span class="block text-slate-400">Akurasi KPK</span>
+                    <strong class="text-lg text-blue-600" x-text="getAccuracyKPK() + '%'">0%</strong>
+                </div>
+                <div class="p-3 bg-slate-100 rounded-lg">
+                    <span class="block text-slate-400">Akurasi FPB</span>
+                    <strong class="text-lg text-purple-600" x-text="getAccuracyFPB() + '%'">0%</strong>
+                </div>
+            </div>
+
+            <div class="pt-8 flex justify-between items-end text-xs text-slate-500">
+                <div>
+                    <p>Tanggal Diterbitkan:</p>
+                    <p class="font-bold text-slate-700" x-text="new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })"></p>
+                </div>
+                <div class="text-center">
+                    <div class="w-32 border-b border-slate-400 mb-1 mx-auto"></div>
+                    <p class="font-bold text-slate-700">Guru Kelas Buel</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alpine App State Logic -->
+    <script>
+        function appData() {
+            return {
+                activeTab: 'home',
+                materiSubTab: 'kpk',
+                mobileMenuOpen: false,
+
+                // Score & Badges
+                score: 0,
+
+                // Calculator State
+                calcCount: 2,
+                calcNum1: 12,
+                calcNum2: 18,
+                calcNum3: 24,
+                calcResult: null,
+
+                // Quiz State
+                quizState: 'start', // 'start', 'active', 'result'
+                currentQuestionIndex: 0,
+                selectedOption: null,
+                showHint: false,
+                quizTimer: 0,
+                timerInterval: null,
+                userAnswers: [],
+
+                // 20 HOTS Questions (10 KPK, 10 FPB)
+                questions: [
+                    // --- 10 SOAL KPK (Soal Cerita / Waktu / Jadwal) ---
+                    {
+                        type: 'KPK',
+                        question: '1. Lampu A menyala setiap 8 detik sekali dan Lampu B menyala setiap 12 detik sekali. Jika kedua lampu menyala bersamaan pada detik ke-0, pada detik ke berapa kedua lampu akan menyala bersamaan kembali?',
+                        options: ['A. 16 detik', 'B. 24 detik', 'C. 32 detik', 'D. 48 detik'],
+                        correctIndex: 1,
+                        hint: 'Cari Kelipatan Persekutuan Terkecil (KPK) dari 8 dan 12.',
+                        explanation: '8 = 2³, 12 = 2² × 3. KPK = 2³ × 3 = 8 × 3 = 24 detik.'
+                    },
+                    {
+                        type: 'KPK',
+                        question: '2. Bus A berangkat dari terminal setiap 15 menit, sedangkan Bus B berangkat setiap 20 menit. Jika kedua bus berangkat bersama-sama pada pukul 07.00, pukul berapa kedua bus akan berangkat bersama lagi?',
+                        options: ['A. 07.45', 'B. 08.00', 'C. 08.15', 'D. 08.30'],
+                        correctIndex: 1,
+                        hint: 'Tentukan KPK dari 15 dan 20 (dalam menit), lalu tambahkan ke pukul 07.00.',
+                        explanation: '15 = 3 × 5, 20 = 2² × 5. KPK = 2² × 3 × 5 = 60 menit (1 jam). Pukul 07.00 + 1 jam = 08.00.'
+                    },
+                    {
+                        type: 'KPK',
+                        question: '3. Ayah ronda setiap 6 hari sekali dan Paman ronda setiap 9 hari sekali. Jika pada tanggal 1 Mei mereka ronda bersama, tanggal berapa mereka ronda bersama lagi di bulan Mei?',
+                        options: ['A. 18 Mei', 'B. 19 Mei', 'C. 20 Mei', 'D. 21 Mei'],
+                        correctIndex: 1,
+                        hint: 'KPK dari 6 dan 9 adalah interval hari. Tambahkan interval tersebut ke tanggal 1 Mei.',
+                        explanation: '6 = 2 × 3, 9 = 3². KPK = 2 × 3² = 18 hari. Tanggal 1 Mei + 18 hari = 19 Mei.'
+                    },
+                    {
+                        type: 'KPK',
+                        question: '4. Siti menyiram bunga setiap 3 hari sekali dan Lani menyiram bunga setiap 5 hari sekali. Jika hari ini hari Senin mereka menyiram bersama, hari apa mereka menyiram bersama berikutnya?',
+                        options: ['A. Hari Selasa', 'B. Hari Rabu', 'C. Hari Selasa minggu depannya', 'D. Hari Selasa dua minggu lagi'],
+                        correctIndex: 2,
+                        hint: 'Cari KPK dari 3 dan 5 (15 hari). Hitung sisa pembagian 15 dengan 7 (jumlah hari dalam seminggu).',
+                        explanation: 'KPK dari 3 dan 5 = 15 hari. 15 ÷ 7 = 2 sisa 1 hari. Senin + 1 hari (2 minggu kemudian) = Hari Selasa.'
+                    },
+                    {
+                        type: 'KPK',
+                        question: '5. Tiga bel sekolah berbunyi bersamaan. Bel I berbunyi tiap 10 menit, Bel II tiap 15 menit, dan Bel III tiap 30 menit. Berapa menit sekali ketiga bel berbunyi bersamaan?',
+                        options: ['A. 15 menit', 'B. 30 menit', 'C. 45 menit', 'D. 60 menit'],
+                        correctIndex: 1,
+                        hint: 'Cari KPK dari 3 angka sekaligus: 10, 15, dan 30.',
+                        explanation: '10 = 2 × 5, 15 = 3 × 5, 30 = 2 × 3 × 5. KPK = 2 × 3 × 5 = 30 menit.'
+                    },
+                    {
+                        type: 'KPK',
+                        question: '6. Kedai A mengganti kain lap setiap 12 jam, Kedai B mengganti setiap 18 jam, dan Kedai C mengganti setiap 24 jam. Setiap berapa jam sekali ketiga kedai mengganti kain lap secara bersamaan?',
+                        options: ['A. 36 jam', 'B. 48 jam', 'C. 72 jam', 'D. 96 jam'],
+                        correctIndex: 2,
+                        hint: 'Cari KPK dari 12, 18, dan 24.',
+                        explanation: '12 = 2² × 3, 18 = 2 × 3², 24 = 2³ × 3. KPK = 2³ × 3² = 8 × 9 = 72 jam.'
+                    },
+                    {
+                        type: 'KPK',
+                        question: '7. Budi berlari mengelilingi lapangan setiap 4 menit, Dino setiap 6 menit, dan Edo setiap 8 menit. Berapa menit sekali mereka akan bertemu kembali di titik start bersamaan?',
+                        options: ['A. 12 menit', 'B. 24 menit', 'C. 36 menit', 'D. 48 menit'],
+                        correctIndex: 1,
+                        hint: 'Cari KPK dari 4, 6, dan 8.',
+                        explanation: '4 = 2², 6 = 2 × 3, 8 = 2³. KPK = 2³ × 3 = 8 × 3 = 24 menit.'
+                    },
+                    {
+                        type: 'KPK',
+                        question: '8. Dokter memeriksa Pasien X setiap 14 hari sekali dan Pasien Y setiap 21 hari sekali. Jika jadwal pemeriksaan bersama jatuh pada hari Minggu, setelah berapa harikah jadwal bersama berikutnya terjadi?',
+                        options: ['A. 28 hari', 'B. 35 hari', 'C. 42 hari', 'D. 63 hari'],
+                        correctIndex: 2,
+                        hint: 'Cari KPK dari 14 dan 21.',
+                        explanation: '14 = 2 × 7, 21 = 3 × 7. KPK = 2 × 3 × 7 = 42 hari.'
+                    },
+                    {
+                        type: 'KPK',
+                        question: '9. Kereta Argo beroperasi setiap 16 jam sekali dan Kereta Express setiap 20 jam sekali. Berapa jam sekali kedua kereta berangkat bersamaan dari stasiun induk?',
+                        options: ['A. 60 jam', 'B. 80 jam', 'C. 100 jam', 'D. 120 jam'],
+                        correctIndex: 1,
+                        hint: 'Cari KPK dari 16 dan 20.',
+                        explanation: '16 = 2⁴, 20 = 2² × 5. KPK = 2⁴ × 5 = 16 × 5 = 80 jam.'
+                    },
+                    {
+                        type: 'KPK',
+                        question: '10. Tepung terigu A dipasok setiap 25 hari dan Tepung terigu B dipasok setiap 30 hari. Berapa hari lagi distributor akan memasok kedua jenis tepung secara bersamaan?',
+                        options: ['A. 90 hari', 'B. 120 hari', 'C. 150 hari', 'D. 180 hari'],
+                        correctIndex: 2,
+                        hint: 'Cari KPK dari 25 dan 30.',
+                        explanation: '25 = 5², 30 = 2 × 3 × 5. KPK = 2 × 3 × 5² = 2 × 3 × 25 = 150 hari.'
+                    },
+
+                    // --- 10 SOAL FPB (Soal Cerita / Membagi Barang Adil) ---
+                    {
+                        type: 'FPB',
+                        question: '11. Ibu memiliki 24 kue bolu dan 36 kue lapis. Ibu ingin membagikan kue tersebut ke beberapa piring sama banyak tanpa sisa. Berapa piring terbanyak yang dapat disiapkan Ibu?',
+                        options: ['A. 6 piring', 'B. 8 piring', 'C. 12 piring', 'D. 18 piring'],
+                        correctIndex: 2,
+                        hint: 'Gunakan FPB untuk mencari jumlah piring terbanyak dari 24 dan 36.',
+                        explanation: '24 = 2³ × 3, 36 = 2² × 3². FPB = 2² × 3 = 4 × 3 = 12 piring.'
+                    },
+                    {
+                        type: 'FPB',
+                        question: '12. Pak Tani memanen 45 buah apel dan 60 buah jeruk. Buah-buah tersebut akan dimasukkan ke dalam keranjang dengan jumlah sama rata tiap jenisnya. Berapa jumlah keranjang terbanyak yang dibutuhkan?',
+                        options: ['A. 5 keranjang', 'B. 10 keranjang', 'C. 15 keranjang', 'D. 20 keranjang'],
+                        correctIndex: 2,
+                        hint: 'Cari FPB dari 45 dan 60.',
+                        explanation: '45 = 3² × 5, 60 = 2² × 3 × 5. FPB = 3 × 5 = 15 keranjang.'
+                    },
+                    {
+                        type: 'FPB',
+                        question: '13. Berdasarkan Soal #12 (45 apel dan 60 jeruk dimasukkan ke 15 keranjang), berapa banyak jeruk yang ada di dalam setiap keranjang?',
+                        options: ['A. 3 buah', 'B. 4 buah', 'C. 5 buah', 'D. 6 buah'],
+                        correctIndex: 1,
+                        hint: 'Bagi total jumlah jeruk (60) dengan jumlah keranjang terbanyak (FPB = 15).',
+                        explanation: 'Jumlah jeruk tiap keranjang = Total Jeruk ÷ FPB = 60 ÷ 15 = 4 buah jeruk.'
+                    },
+                    {
+                        type: 'FPB',
+                        question: '14. Panitia ulang tahun memiliki 32 pensil, 48 buku tulis, dan 64 penghapus. Paket hadiah dibuat dengan isi sama banyak untuk tiap barang. Berapa penerima terbanyak paket tersebut?',
+                        options: ['A. 8 anak', 'B. 12 anak', 'C. 16 anak', 'D. 24 anak'],
+                        correctIndex: 2,
+                        hint: 'Cari FPB dari 3 angka: 32, 48, dan 64.',
+                        explanation: '32 = 2⁵, 48 = 2⁴ × 3, 64 = 2⁶. FPB = 2⁴ = 16 paket/anak.'
+                    },
+                    {
+                        type: 'FPB',
+                        question: '15. Pak Doni memiliki dua potong tali masing-masing panjangnya 56 cm dan 84 cm. Tali dipotong menjadi beberapa bagian yang sama panjang tanpa ada sisa. Berapa ukuran potongan tali terpanjang yang bisa dibuat?',
+                        options: ['A. 14 cm', 'B. 21 cm', 'C. 28 cm', 'D. 42 cm'],
+                        correctIndex: 2,
+                        hint: 'Cari FPB dari 56 dan 84.',
+                        explanation: '56 = 2³ × 7, 84 = 2² × 3 × 7. FPB = 2² × 7 = 4 × 7 = 28 cm.'
+                    },
+                    {
+                        type: 'FPB',
+                        question: '16. Dalam kegiatan bakti sosial, terkumpul 72 kg beras, 90 bungkus mi instan, dan 108 kaleng susu. Bantuan dimasukkan ke dalam kantong sembako sama rata. Berapa kantong sembako terbanyak yang bisa disiapkan?',
+                        options: ['A. 9 kantong', 'B. 18 kantong', 'C. 27 kantong', 'D. 36 kantong'],
+                        correctIndex: 1,
+                        hint: 'Cari FPB dari 72, 90, dan 108.',
+                        explanation: '72 = 2³ × 3², 90 = 2 × 3² × 5, 108 = 2² × 3³. FPB = 2 × 3² = 2 × 9 = 18 kantong.'
+                    },
+                    {
+                        type: 'FPB',
+                        question: '17. Berdasarkan Soal #16 (18 kantong sembako), berapa kg beras yang didapatkan oleh masing-masing penerima sembako?',
+                        options: ['A. 4 kg', 'B. 5 kg', 'C. 6 kg', 'D. 8 kg'],
+                        correctIndex: 0,
+                        hint: 'Bagi total kg beras (72) dengan jumlah kantong (18).',
+                        explanation: 'Beras tiap kantong = 72 ÷ 18 = 4 kg.'
+                    },
+                    {
+                        type: 'FPB',
+                        question: '18. Pak Guru akan membentuk kelompok diskusi dari 30 siswa laki-laki dan 45 siswa perempuan. Setiap kelompok memiliki komposisi siswa laki-laki dan perempuan yang sama banyak. Berapa kelompok terbanyak yang dapat dibentuk?',
+                        options: ['A. 5 kelompok', 'B. 10 kelompok', 'C. 15 kelompok', 'D. 30 kelompok'],
+                        correctIndex: 2,
+                        hint: 'Cari FPB dari 30 dan 45.',
+                        explanation: '30 = 2 × 3 × 5, 45 = 3² × 5. FPB = 3 × 5 = 15 kelompok.'
+                    },
+                    {
+                        type: 'FPB',
+                        question: '19. Sebuah toko bunga memiliki 40 mawar merah dan 60 mawar putih. Bunga dipadukan ke dalam buket bunga identik. Berapa jumlah mawar merah di setiap buket bunga?',
+                        options: ['A. 2 mawar merah', 'B. 3 mawar merah', 'C. 4 mawar merah', 'D. 5 mawar merah'],
+                        correctIndex: 0,
+                        hint: 'Cari dulu FPB dari 40 dan 60 (20 buket). Lalu bagi 40 mawar merah dengan 20 buket.',
+                        explanation: 'FPB(40, 60) = 20 buket. Mawar merah per buket = 40 ÷ 20 = 2 mawar merah.'
+                    },
+                    {
+                        type: 'FPB',
+                        question: '20. Ibu guru memiliki 50 stiker bintang dan 75 stiker senyum. Stiker dibagikan kepada murid berprestasi secara adil. Berapa murid terbanyak yang bisa menerima paket stiker tersebut?',
+                        options: ['A. 15 murid', 'B. 25 murid', 'C. 30 murid', 'D. 50 murid'],
+                        correctIndex: 1,
+                        hint: 'Cari FPB dari 50 dan 75.',
+                        explanation: '50 = 2 × 5², 75 = 3 × 5². FPB = 5² = 25 murid.'
+                    }
+                ],
+
+                // Init
+                initData() {
+                    this.$nextTick(() => {
+                        lucide.createIcons();
+                    });
+                },
+
+                // Calculator Logic
+                resetCalc() {
+                    this.calcResult = null;
+                },
+
+                getPrimeFactors(n) {
+                    let factors = [];
+                    let divisor = 2;
+                    let temp = n;
+                    while (temp >= 2) {
+                        if (temp % divisor === 0) {
+                            factors.push(divisor);
+                            temp = temp / divisor;
+                        } else {
+                            divisor++;
+                        }
+                    }
+                    return factors;
+                },
+
+                calculateKpkFpb() {
+                    let nums = [this.calcNum1, this.calcNum2];
+                    if (this.calcCount === 3) {
+                        nums.push(this.calcNum3);
+                    }
+
+                    // Validate inputs
+                    if (nums.some(n => !n || n < 1)) {
+                        alert("Masukkan angka yang valid!");
+                        return;
+                    }
+
+                    // Helper GCD & LCM
+                    const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+                    const lcm = (a, b) => (a * b) / gcd(a, b);
+
+                    let currentFpb = nums[0];
+                    let currentKpk = nums[0];
+
+                    for (let i = 1; i < nums.length; i++) {
+                        currentFpb = gcd(currentFpb, nums[i]);
+                        currentKpk = lcm(currentKpk, nums[i]);
+                    }
+
+                    // Factors breakdown
+                    let factorList = nums.map(n => {
+                        let f = this.getPrimeFactors(n);
+                        // count frequencies
+                        let counts = {};
+                        f.forEach(x => counts[x] = (counts[x] || 0) + 1);
+                        let strArr = [];
+                        for (let k in counts) {
+                            strArr.push(counts[k] > 1 ? `${k}²` : `${k}`);
+                        }
+                        return {
+                            num: n,
+                            factors: f,
+                            factorString: strArr.join(' × ') || n
+                        };
+                    });
+
+                    this.calcResult = {
+                        fpb: currentFpb,
+                        kpk: currentKpk,
+                        factors: factorList,
+                        kpkFormula: 'Perkalian semua faktor prima pangkat tertinggi',
+                        fpbFormula: 'Perkalian faktor prima sekutu pangkat terendah'
+                    };
+
+                    this.$nextTick(() => lucide.createIcons());
+                },
+
+                // Quiz Flow Logic
+                startQuiz() {
+                    this.quizState = 'active';
+                    this.currentQuestionIndex = 0;
+                    this.selectedOption = null;
+                    this.showHint = false;
+                    this.quizTimer = 0;
+                    this.userAnswers = [];
+                    this.score = 0;
+
+                    if (this.timerInterval) clearInterval(this.timerInterval);
+                    this.timerInterval = setInterval(() => {
+                        this.quizTimer++;
+                    }, 1000);
+
+                    this.$nextTick(() => lucide.createIcons());
+                },
+
+                toggleHint() {
+                    this.showHint = !this.showHint;
+                },
+
+                selectAnswer(index) {
+                    if (this.selectedOption !== null) return;
+                    this.selectedOption = index;
+
+                    let q = this.questions[this.currentQuestionIndex];
+                    let isCorrect = (index === q.correctIndex);
+
+                    if (isCorrect) {
+                        this.score += 5; // 20 * 5 = 100
+                    }
+
+                    this.userAnswers.push({
+                        questionObj: q,
+                        selected: index,
+                        isCorrect: isCorrect
+                    });
+                },
+
+                nextQuestion() {
+                    if (this.currentQuestionIndex + 1 < this.questions.length) {
+                        this.currentQuestionIndex++;
+                        this.selectedOption = null;
+                        this.showHint = false;
+                        this.$nextTick(() => lucide.createIcons());
+                    } else {
+                        // Finish
+                        clearInterval(this.timerInterval);
+                        this.quizState = 'result';
+                        this.triggerConfetti();
+                        this.$nextTick(() => lucide.createIcons());
+                    }
+                },
+
+                formatTime(seconds) {
+                    let mins = Math.floor(seconds / 60);
+                    let secs = seconds % 60;
+                    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                },
+
+                getAccuracyKPK() {
+                    let kpkAnswers = this.userAnswers.filter(a => a.questionObj.type === 'KPK');
+                    if (kpkAnswers.length === 0) return 0;
+                    let correct = kpkAnswers.filter(a => a.isCorrect).length;
+                    return Math.round((correct / kpkAnswers.length) * 100);
+                },
+
+                getAccuracyFPB() {
+                    let fpbAnswers = this.userAnswers.filter(a => a.questionObj.type === 'FPB');
+                    if (fpbAnswers.length === 0) return 0;
+                    let correct = fpbAnswers.filter(a => a.isCorrect).length;
+                    return Math.round((correct / fpbAnswers.length) * 100);
+                },
+
+                getBadgeName() {
+                    if (this.score >= 90) return 'Master Matematika';
+                    if (this.score >= 70) return 'Pejuang KPK & FPB';
+                    if (this.score >= 50) return 'Pelajar Tekun';
+                    return 'Pemula SD';
+                },
+
+                getRecommendationText() {
+                    let kpkAcc = this.getAccuracyKPK();
+                    let fpbAcc = this.getAccuracyFPB();
+
+                    if (kpkAcc >= 80 && fpbAcc >= 80) {
+                        return "Luar biasa! Pemahamanmu mengenai KPK (jadwal bersama) dan FPB (pembagian adil) sangat matang. Pertahankan kinerjamu di Kelas Buel!";
+                    } else if (kpkAcc < fpbAcc) {
+                        return "Kamu sudah bagus di FPB, namun perlu berlatih lebih banyak pada soal cerita KPK (mencari jadwal bersama/kelipatan waktu). Buka modul KPK untuk mengulang kembali.";
+                    } else if (fpbAcc < kpkAcc) {
+                        return "Kamu sudah unggul di KPK, namun perlu memperdalam pemahaman FPB (membagi barang ke beberapa kantong/wadah secara adil). Cek modul FPB untuk ulasan ringkas.";
+                    } else {
+                        return "Pelajari kembali modul ringkasan KPK & FPB serta gunakan Tool Kalkulator untuk melatih faktorisasi prima.";
+                    }
+                },
+
+                triggerConfetti() {
+                    if (typeof confetti === 'function') {
+                        confetti({
+                            particleCount: 100,
+                            spread: 70,
+                            origin: { y: 0.6 }
+                        });
+                    }
+                },
+
+                printCertificate() {
+                    window.print();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
