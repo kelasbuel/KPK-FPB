@@ -14,6 +14,9 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Firebase SDK (compat agar cocok dengan struktur HTML yang sudah ada) -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 
     <script>
         tailwind.config = {
@@ -102,6 +105,10 @@
                             <i data-lucide="brain-circuit" class="w-4 h-4"></i>
                             <span>Kuis HOTS (20)</span>
                         </button>
+                        <button @click="activeTab = 'liveScore'; loadLiveScores()" :class="activeTab === 'liveScore' ? 'bg-brand-50 text-brand-600 font-semibold' : 'text-slate-600 hover:bg-slate-100'" class="px-4 py-2 rounded-xl text-sm transition-all flex items-center space-x-2">
+                            <i data-lucide="trophy" class="w-4 h-4"></i>
+                            <span>Live Score</span>
+                        </button>
                     </div>
 
                     <!-- User Stats / Badge Preview -->
@@ -146,6 +153,10 @@
                     <i data-lucide="brain-circuit" class="w-5 h-5 text-rose-500"></i>
                     <span>Kuis HOTS (20 Soal)</span>
                 </button>
+                <button @click="activeTab = 'liveScore'; mobileMenuOpen = false; loadLiveScores()" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-600 flex items-center space-x-3">
+                    <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
+                    <span>Live Score</span>
+                </button>
             </div>
         </nav>
 
@@ -177,12 +188,15 @@
                             <button @click="activeTab = 'kuis'" class="px-6 py-3 bg-accent-500/30 hover:bg-accent-500/50 text-white border border-white/30 rounded-xl font-semibold backdrop-blur-md transition-all flex items-center gap-2">
                                 <i data-lucide="target" class="w-5 h-5"></i> Langsung Kuis (20 Soal)
                             </button>
+                            <button @click="activeTab = 'liveScore'; loadLiveScores()" class="px-6 py-3 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-xl font-semibold backdrop-blur-md transition-all flex items-center gap-2">
+                                <i data-lucide="trophy" class="w-5 h-5"></i> Lihat Live Score
+                            </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Features Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                     <!-- Feature 1 -->
                     <div class="glass-card p-6 rounded-2xl shadow-sm border border-white/60 hover:shadow-md transition-all">
                         <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mb-4">
@@ -213,6 +227,16 @@
                             Terbagi seimbang: 10 Soal KPK (Jadwal bersama) & 10 Soal FPB (Pembagian adil) dengan pembahasan detail!
                         </p>
                     </div>
+                    <!-- Feature 4: Live Score -->
+                    <button @click="activeTab = 'liveScore'; loadLiveScores()" class="glass-card p-6 rounded-2xl shadow-sm border border-white/60 hover:shadow-md transition-all text-left">
+                        <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center mb-4">
+                            <i data-lucide="trophy" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-2">Live Score Kelas</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed">
+                            Lihat peringkat nilai kuis yang diperbarui otomatis saat siswa menyelesaikan kuis.
+                        </p>
+                    </button>
                 </div>
 
                 <!-- Quick Tips Cards: Kata Kunci Soal Cerita -->
@@ -545,6 +569,11 @@
                             </ul>
                         </div>
 
+                        <div class="text-left space-y-2">
+                            <label for="quizStudentName" class="block text-sm font-bold text-slate-700">Nama siswa</label>
+                            <input id="quizStudentName" type="text" x-model.trim="quizStudentName" maxlength="50" autocomplete="name" placeholder="Masukkan nama sebelum mulai kuis" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 font-semibold text-slate-800">
+                            <p class="text-xs text-slate-500">Nama ini dipakai untuk mencatat hasilmu di Live Score. Nama yang sama akan memperbarui satu entri, bukan membuat duplikat.</p>
+                        </div>
                         <button @click="startQuiz()" class="w-full py-4 bg-gradient-to-r from-brand-600 to-accent-600 hover:from-brand-700 hover:to-accent-700 text-white font-extrabold rounded-2xl shadow-lg transition-transform active:scale-95 text-base flex items-center justify-center gap-2">
                             <i data-lucide="play" class="w-5 h-5"></i> Mulai Kuis Sekarang
                         </button>
@@ -740,6 +769,72 @@
                 </template>
             </div>
 
+            <!-- TAB 5: LIVE SCORE -->
+            <div x-show="activeTab === 'liveScore'" x-cloak class="space-y-8">
+                <div class="text-center max-w-2xl mx-auto space-y-2">
+                    <div class="flex justify-center">
+                        <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center">
+                            <i data-lucide="trophy" class="w-7 h-7"></i>
+                        </div>
+                    </div>
+                    <h2 class="text-3xl font-extrabold text-slate-800">Live Score Kelas Buel</h2>
+                    <p class="text-slate-600 text-sm">Peringkat diperbarui otomatis saat hasil kuis tersimpan. Tidak ada daftar nama siswa bawaan; nama berasal dari peserta yang mengerjakan kuis.</p>
+                </div>
+
+                <div class="glass-card max-w-4xl mx-auto p-5 sm:p-8 rounded-3xl border border-white/80 shadow-md space-y-5">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h3 class="text-xl font-extrabold text-slate-800">Papan Peringkat</h3>
+                            <p class="text-xs text-slate-500 mt-1">Urutan berdasarkan nilai tertinggi, lalu waktu pengerjaan tercepat.</p>
+                        </div>
+                        <button @click="loadLiveScores()" class="px-4 py-2 rounded-xl bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold text-sm flex items-center gap-2">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Muat Ulang
+                        </button>
+                    </div>
+
+                    <div x-show="!firebaseReady" class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+                        Firebase belum terhubung. Periksa koneksi dan konfigurasi Firebase di bagian script.
+                    </div>
+                    <div x-show="firebaseReady && liveScores.length === 0" class="p-8 text-center rounded-2xl bg-white/70 border border-slate-200">
+                        <i data-lucide="medal" class="w-10 h-10 text-slate-300 mx-auto mb-3"></i>
+                        <p class="font-bold text-slate-700">Belum ada hasil kuis</p>
+                        <p class="text-sm text-slate-500 mt-1">Jadilah peserta pertama yang menyelesaikan kuis KPK & FPB!</p>
+                        <button @click="activeTab = 'kuis'" class="mt-4 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm">Mulai Kuis</button>
+                    </div>
+
+                    <div x-show="liveScores.length > 0" class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead>
+                                <tr class="text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                                    <th class="px-3 py-3">Peringkat</th>
+                                    <th class="px-3 py-3">Nama Siswa</th>
+                                    <th class="px-3 py-3 text-center">Nilai</th>
+                                    <th class="px-3 py-3 text-center">Benar</th>
+                                    <th class="px-3 py-3 text-center">Waktu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="(student, index) in liveScores" :key="student.key">
+                                    <tr class="border-b border-slate-100 last:border-0 hover:bg-white/60">
+                                        <td class="px-3 py-4">
+                                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl font-extrabold"
+                                                :class="index === 0 ? 'bg-amber-100 text-amber-700' : (index === 1 ? 'bg-slate-100 text-slate-600' : (index === 2 ? 'bg-orange-100 text-orange-700' : 'bg-white text-slate-500'))"
+                                                x-text="index + 1"></span>
+                                        </td>
+                                        <td class="px-3 py-4 font-bold text-slate-800" x-text="student.name"></td>
+                                        <td class="px-3 py-4 text-center font-extrabold text-brand-600" x-text="student.score"></td>
+                                        <td class="px-3 py-4 text-center text-slate-600" x-text="student.correct + '/20'"></td>
+                                        <td class="px-3 py-4 text-center text-slate-600" x-text="formatTime(student.duration || 0)"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p x-show="liveScoreError" x-text="liveScoreError" class="text-sm text-rose-600"></p>
+                    <p class="text-[11px] text-slate-400">Catatan: hasil memakai nama yang dimasukkan peserta. Untuk mencegah penyalahgunaan, atur Firebase Realtime Database Rules sebelum dipakai publik.</p>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -804,6 +899,28 @@
         </div>
     </div>
 
+    <!-- Firebase Configuration & Database -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAIobdFlzoolbWM_FBawqqmf2_wLFdSYEE",
+            authDomain: "kelas-buel-math.firebaseapp.com",
+            databaseURL: "https://kelas-buel-math-default-rtdb.firebaseio.com",
+            projectId: "kelas-buel-math",
+            storageBucket: "kelas-buel-math.firebasestorage.app",
+            messagingSenderId: "1007994618871",
+            appId: "1:1007994618871:web:2653cb21fb48d85e17a4f2",
+            measurementId: "G-E2RLK6CBH1"
+        };
+
+        let firebaseDatabase = null;
+        try {
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            firebaseDatabase = firebase.database();
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+        }
+    </script>
+
     <!-- Alpine App State Logic -->
     <script>
         function appData() {
@@ -811,6 +928,13 @@
                 activeTab: 'home',
                 materiSubTab: 'kpk',
                 mobileMenuOpen: false,
+
+                // Live Score / Firebase
+                quizStudentName: '',
+                liveScores: [],
+                firebaseReady: false,
+                liveScoreError: '',
+                liveScoreListenerAttached: false,
 
                 // Score & Badges
                 score: 0,
@@ -1003,6 +1127,62 @@
                     this.$nextTick(() => {
                         lucide.createIcons();
                     });
+                    this.loadLiveScores();
+                },
+
+                // Live Score: listener Firebase Realtime Database
+                loadLiveScores() {
+                    if (!firebaseDatabase) {
+                        this.firebaseReady = false;
+                        this.liveScoreError = 'Firebase gagal diinisialisasi. Periksa konfigurasi dan koneksi internet.';
+                        return;
+                    }
+                    this.firebaseReady = true;
+                    this.liveScoreError = '';
+                    if (this.liveScoreListenerAttached) return;
+                    this.liveScoreListenerAttached = true;
+
+                    firebaseDatabase.ref('liveScores').on('value', (snapshot) => {
+                        const raw = snapshot.val() || {};
+                        this.liveScores = Object.entries(raw)
+                            .map(([key, value]) => ({ key, ...value }))
+                            .filter(item => item && typeof item.name === 'string' && Number.isFinite(Number(item.score)))
+                            .sort((a, b) => Number(b.score) - Number(a.score) || Number(a.duration || 0) - Number(b.duration || 0));
+                        this.$nextTick(() => lucide.createIcons());
+                    }, (error) => {
+                        console.error('Live Score read error:', error);
+                        this.liveScoreError = 'Tidak dapat membaca Live Score. Periksa Firebase Database Rules.';
+                    });
+                },
+
+                async saveLiveScore() {
+                    if (!firebaseDatabase) {
+                        this.liveScoreError = 'Firebase belum terhubung; hasil kuis tidak dapat dikirim ke Live Score.';
+                        return;
+                    }
+                    const cleanName = (this.quizStudentName || '').trim().replace(/\\s+/g, ' ').slice(0, 50);
+                    if (!cleanName) return;
+
+                    // Nama yang sama memakai key yang sama sehingga tidak membuat baris duplikat.
+                    const studentKey = cleanName.toLowerCase()
+                        .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+                        .replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'siswa';
+
+                    const result = {
+                        name: cleanName,
+                        score: Number(this.score) || 0,
+                        correct: this.userAnswers.filter(answer => answer.isCorrect).length,
+                        duration: Number(this.quizTimer) || 0,
+                        updatedAt: Date.now()
+                    };
+
+                    try {
+                        await firebaseDatabase.ref('liveScores/' + studentKey).set(result);
+                        this.liveScoreError = '';
+                    } catch (error) {
+                        console.error('Live Score write error:', error);
+                        this.liveScoreError = 'Hasil belum tersimpan. Periksa Firebase Database Rules dan koneksi internet.';
+                    }
                 },
 
                 // Calculator Logic
@@ -1079,6 +1259,12 @@
 
                 // Quiz Flow Logic
                 startQuiz() {
+                    if (!this.quizStudentName || !this.quizStudentName.trim()) {
+                        alert('Masukkan nama siswa terlebih dahulu agar hasil bisa masuk ke Live Score.');
+                        return;
+                    }
+                    this.quizStudentName = this.quizStudentName.trim().replace(/\\s+/g, ' ').slice(0, 50);
+                    this.liveScoreError = '';
                     this.quizState = 'active';
                     this.currentQuestionIndex = 0;
                     this.selectedOption = null;
@@ -1127,6 +1313,7 @@
                         // Finish
                         clearInterval(this.timerInterval);
                         this.quizState = 'result';
+                        this.saveLiveScore();
                         this.triggerConfetti();
                         this.$nextTick(() => lucide.createIcons());
                     }
